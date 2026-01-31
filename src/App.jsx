@@ -156,6 +156,7 @@ setTimeout(() => {
         zIndex: 2
       }}>
 
+
         <motion.h2
           key={step}
           initial={{ opacity: 0, y: 20 }}
