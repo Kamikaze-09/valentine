@@ -6,10 +6,16 @@ export default function App() {
   const [hearts, setHearts] = useState([]);
   const [easter, setEaster] = useState(false);
   const [revealFX, setRevealFX] = useState(false);
+  const [bassHit, setBassHit] = useState(false);
 
   const clickCount = useRef(0);
   const audioRef = useRef(null);
   const volumeInterval = useRef(null);
+
+  // Audio analysis refs
+  const analyserRef = useRef(null);
+  const dataArrayRef = useRef(null);
+  const audioCtxRef = useRef(null);
 
   const messages = [
     "Ditiyaa… hiii... uk? 💖",
@@ -21,7 +27,7 @@ export default function App() {
   ];
 
   const floatingItems = Array.from({ length: 14 });
-  const fallItems = Array.from({ length: 24 }); // less clustered
+  const fallItems = Array.from({ length: 24 });
 
   const spawnHeart = () => {
     const id = Date.now();
@@ -31,6 +37,7 @@ export default function App() {
     }, 3000);
   };
 
+  // 🎧 Music + bass detection
   const startMusic = () => {
     const audio = audioRef.current;
     audio.currentTime = 0;
@@ -45,6 +52,41 @@ export default function App() {
         audio.volume = vol;
       }
     }, 2000);
+
+    if (!audioCtxRef.current) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = new AudioContext();
+      const source = audioCtx.createMediaElementSource(audio);
+      const analyser = audioCtx.createAnalyser();
+
+      analyser.fftSize = 256;
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      analyserRef.current = analyser;
+      dataArrayRef.current = dataArray;
+      audioCtxRef.current = audioCtx;
+
+      const detectBass = () => {
+        analyser.getByteFrequencyData(dataArray);
+
+        // LOW frequencies only (bass)
+        const bassEnergy =
+          dataArray.slice(0, 15).reduce((a, b) => a + b, 0) / 15;
+
+        if (bassEnergy > 120) {
+          setBassHit(true);
+          setTimeout(() => setBassHit(false), 120);
+        }
+
+        requestAnimationFrame(detectBass);
+      };
+
+      detectBass();
+    }
   };
 
   const handleNext = () => {
@@ -59,12 +101,6 @@ export default function App() {
     setStep(step + 1);
   };
 
-  useEffect(() => {
-    if (step === messages.length - 1) {
-      clearInterval(volumeInterval.current);
-    }
-  }, [step]);
-
   const handlePhotoClick = () => {
     clickCount.current++;
     if (clickCount.current >= 2) setEaster(true);
@@ -73,18 +109,26 @@ export default function App() {
   const isMobile = window.innerWidth < 768;
 
   return (
-    <div style={{
-      width: "100vw",
-      minHeight: "100svh",
-      background: "linear-gradient(270deg, #f472b6, #f9a8d4, #fecdd3)",
-      backgroundSize: "600% 600%",
-      animation: "gradient 10s ease infinite",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      position: "relative",
-      overflow: "hidden"
-    }}>
+    <motion.div
+      animate={
+        bassHit
+          ? { x: [-2, 2, -2], y: [-1, 1, -1] }
+          : { x: 0, y: 0 }
+      }
+      transition={{ duration: 0.12 }}
+      style={{
+        width: "100vw",
+        minHeight: "100svh",
+        background: "linear-gradient(270deg, #f472b6, #f9a8d4, #fecdd3)",
+        backgroundSize: "600% 600%",
+        animation: "gradient 10s ease infinite",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        position: "relative",
+        overflow: "hidden"
+      }}
+    >
 
       <style>{`
         @keyframes gradient {
@@ -110,13 +154,8 @@ export default function App() {
         opacity: 0.35
       }} />
 
-      {/* FAST MOVING FLOATING OBJECTS */}
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 1,
-        pointerEvents: "none"
-      }}>
+      {/* FLOATING OBJECTS */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none" }}>
         {floatingItems.map((_, i) => (
           <motion.div
             key={i}
@@ -124,12 +163,7 @@ export default function App() {
               x: ["0vw", `${Math.random() * 100}vw`],
               y: ["0vh", `${Math.random() * 100}vh`]
             }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "linear"
-            }}
+            transition={{ duration: 5, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
             style={{
               position: "absolute",
               left: `${Math.random() * 100}%`,
@@ -143,30 +177,14 @@ export default function App() {
         ))}
       </div>
 
-      {/* HEARTS */}
-      {hearts.map((id) => (
-        <div key={id} style={{
-          position: "absolute",
-          bottom: "0",
-          left: Math.random() * 90 + "vw",
-          fontSize: "26px",
-          animation: "float 3s linear"
-        }}>💗</div>
-      ))}
-
       {/* MUSIC */}
       <audio ref={audioRef}>
         <source src="/anyayo.mp3" type="audio/mpeg" />
       </audio>
 
-      {/* FALLING OBJECTS – LAST TAP */}
+      {/* FALLING OBJECTS — disappear ONLY after reaching bottom */}
       {revealFX && (
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 3,
-          pointerEvents: "none"
-        }}>
+        <div style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
           {fallItems.map((_, i) => (
             <motion.div
               key={i}
@@ -174,12 +192,12 @@ export default function App() {
               animate={{ y: "110vh" }}
               transition={{
                 duration: 6,
-                delay: i * 0.15,   // spreads them out
+                delay: i * 0.15,
                 ease: "linear"
               }}
               style={{
                 position: "absolute",
-                left: `${(i % 8) * 12 + 4}%`, // even horizontal spacing
+                left: `${(i % 8) * 12 + 4}%`,
                 fontSize: "28px",
                 opacity: 0.95
               }}
@@ -201,7 +219,6 @@ export default function App() {
         zIndex: 2,
         boxShadow: "0 0 40px rgba(236,72,153,0.35)"
       }}>
-
         <motion.h2
           key={step}
           initial={{ opacity: 0, y: 20 }}
@@ -250,6 +267,6 @@ export default function App() {
           </motion.div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
