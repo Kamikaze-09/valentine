@@ -151,7 +151,7 @@ setTimeout(() => {
         padding: "30px",
         borderRadius: "20px",
         width: "90%",
-        maxWidth: "400px",
+        maxWidth: "600px",
         textAlign: "center",
         zIndex: 2
       }}>
