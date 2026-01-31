@@ -114,13 +114,17 @@ setTimeout(() => {
       {/* Blurred background */}
       <div style={{
         position: "absolute",
-        inset: 0,
+        width: "100%",
+        height: "100%",
         backgroundImage: "url('/ditiyaa.jpg')",
-        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
-        filter: "blur(20px)",
+        backgroundSize: "contain",
+        filter: "blur(30px)",
+        transform: "scale(1.2)",
         opacity: 0.25
       }} />
+
 
       {/* Hearts */}
       {hearts.map((id) => (
@@ -151,7 +155,7 @@ setTimeout(() => {
         padding: "30px",
         borderRadius: "20px",
         width: "90%",
-        maxWidth: "600px",
+        maxWidth: "400px",
         textAlign: "center",
         zIndex: 2
       }}>
