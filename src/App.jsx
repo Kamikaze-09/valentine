@@ -13,13 +13,12 @@ export default function App() {
   const messages = [
     "Hey Ditiyaa… tui the loveliest, cutest, mastikhor-est girl i have ever seeen 💖",
     "Bee it any day, keep slayying ✨",
-    " tui deserve koris being treated as a princess 👑",
+    "tui deserve koris being treated as a princess 👑",
     "Just be happyyy and besttt wishesss andd neverrrr be saadd💕",
     "Not a proposal… just a small Valentine's wish 🌸",
     "Hope this made you smile a little 💗"
   ];
 
-  // Floating hearts
   const spawnHeart = () => {
     const id = Date.now();
     setHearts((h) => [...h, id]);
@@ -28,7 +27,6 @@ export default function App() {
     }, 3000);
   };
 
-  // Start music
   const startMusic = () => {
     const audio = audioRef.current;
     audio.currentTime = 0;
@@ -50,7 +48,6 @@ export default function App() {
     setStep(step + 1);
   };
 
-  // Final screen logic
   useEffect(() => {
     if (step === messages.length - 1) {
       clearInterval(volumeInterval.current);
@@ -64,26 +61,22 @@ export default function App() {
         } else clearInterval(finalFade);
       }, 100);
 
-      // Fade out after 10 seconds
-setTimeout(() => {
-  let vol = audio.volume;
-
-  const fadeOut = setInterval(() => {
-    if (vol > 0.01) {
-      vol -= 0.02;       // reduce volume smoothly
-      audio.volume = vol;
-    } else {
-      audio.pause();    // finally stop
-      audio.volume = 0; // reset
-      clearInterval(fadeOut);
+      setTimeout(() => {
+        let vol = audio.volume;
+        const fadeOut = setInterval(() => {
+          if (vol > 0.01) {
+            vol -= 0.02;
+            audio.volume = vol;
+          } else {
+            audio.pause();
+            audio.volume = 0;
+            clearInterval(fadeOut);
+          }
+        }, 100);
+      }, 20000);
     }
-  }, 100); // 100ms × ~50 steps = ~5 seconds
-}, 20000);
-
-}
   }, [step]);
 
-  // Easter egg
   const handlePhotoClick = () => {
     clickCount.current++;
     if (clickCount.current >= 5) setEaster(true);
@@ -111,20 +104,17 @@ setTimeout(() => {
         }
       `}</style>
 
-      {/* Blurred background */}
+      {/* DESKTOP BLURRED BACKGROUND */}
       <div style={{
         position: "absolute",
-        width: "100%",
-        height: "100%",
-        backgroundImage: "url('/ditiyaa.jpg')",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
+        inset: 0,
+        backgroundImage: "url('/desktop.jpg')",
         backgroundSize: "cover",
-        filter: "blur(30px)",
+        backgroundPosition: "center",
+        filter: "blur(35px)",
         transform: "scale(1.2)",
-        opacity: 0.25
+        opacity: 0.3
       }} />
-
 
       {/* Hearts */}
       {hearts.map((id) => (
@@ -149,17 +139,16 @@ setTimeout(() => {
         <source src="/anyayo.mp3" type="audio/mpeg" />
       </audio>
 
-
+      {/* MAIN CARD (UNCHANGED) */}
       <div style={{
         background: "white",
         padding: "30px",
         borderRadius: "20px",
-        width: "90%",
+        width: "400px",
         maxWidth: "400px",
         textAlign: "center",
         zIndex: 2
       }}>
-
 
         <motion.h2
           key={step}
@@ -174,7 +163,6 @@ setTimeout(() => {
         {step < messages.length - 1 ? (
           <motion.button
             onClick={handleNext}
-            onTouchStart={handleNext}
             animate={{ rotate: [0, -5, 5, 0] }}
             transition={{ duration: 0.4 }}
             style={{
@@ -193,9 +181,14 @@ setTimeout(() => {
         ) : (
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
             <img
-              src="/ditiyaa.jpg"
+              src="/desktop.jpg"
               onClick={handlePhotoClick}
-              style={{ width: "100%", borderRadius: "15px", marginTop: "20px", cursor: "pointer" }}
+              style={{
+                width: "100%",
+                borderRadius: "15px",
+                marginTop: "20px",
+                cursor: "pointer"
+              }}
             />
             {easter && (
               <p style={{ marginTop: "10px", color: "#db2777" }}>
