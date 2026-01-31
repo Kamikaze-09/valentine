@@ -6,13 +6,10 @@ export default function App() {
   const [hearts, setHearts] = useState([]);
   const [easter, setEaster] = useState(false);
   const [revealFX, setRevealFX] = useState(false);
-  const [showImage, setShowImage] = useState(false);
 
   const clickCount = useRef(0);
   const audioRef = useRef(null);
   const volumeInterval = useRef(null);
-
-  const floatingItems = Array.from({ length: 12 });
 
   const messages = [
     "Ditiyaa… hiii... uk? 💖",
@@ -22,6 +19,8 @@ export default function App() {
     "Not a proposal… just a small Valentine's wish 🌸",
     "Hope this made you smile a little 💗"
   ];
+
+  const floatingItems = Array.from({ length: 14 });
 
   const spawnHeart = () => {
     const id = Date.now();
@@ -52,10 +51,7 @@ export default function App() {
 
     if (step === messages.length - 2) {
       setRevealFX(true);
-      setTimeout(() => {
-        setRevealFX(false);
-        setShowImage(true);
-      }, 3000);
+      setTimeout(() => setRevealFX(false), 3000);
     }
 
     if (step === 0) startMusic();
@@ -65,29 +61,6 @@ export default function App() {
   useEffect(() => {
     if (step === messages.length - 1) {
       clearInterval(volumeInterval.current);
-      const audio = audioRef.current;
-      let vol = audio.volume;
-
-      const finalFade = setInterval(() => {
-        if (vol < 1) {
-          vol += 0.02;
-          audio.volume = vol;
-        } else clearInterval(finalFade);
-      }, 100);
-
-      setTimeout(() => {
-        let vol = audio.volume;
-        const fadeOut = setInterval(() => {
-          if (vol > 0.01) {
-            vol -= 0.02;
-            audio.volume = vol;
-          } else {
-            audio.pause();
-            audio.volume = 0;
-            clearInterval(fadeOut);
-          }
-        }, 100);
-      }, 20000);
     }
   }, [step]);
 
@@ -133,10 +106,10 @@ export default function App() {
         backgroundPosition: "center",
         filter: "blur(35px)",
         transform: "scale(1.2)",
-        opacity: 0.3
+        opacity: 0.35
       }} />
 
-      {/* FLOATING BACKGROUND OBJECTS */}
+      {/* FAST MOVING FLOATING OBJECTS */}
       <div style={{
         position: "absolute",
         inset: 0,
@@ -146,18 +119,22 @@ export default function App() {
         {floatingItems.map((_, i) => (
           <motion.div
             key={i}
-            initial={{ y: "110%", opacity: 0 }}
-            animate={{ y: "-10%", opacity: 0.7 }}
+            animate={{
+              x: ["0vw", `${Math.random() * 100}vw`],
+              y: ["0vh", `${Math.random() * 100}vh`]
+            }}
             transition={{
-              duration: 12 + Math.random() * 6,
+              duration: 6,
               repeat: Infinity,
-              delay: Math.random() * 5,
+              repeatType: "reverse",
               ease: "linear"
             }}
             style={{
               position: "absolute",
               left: `${Math.random() * 100}%`,
-              fontSize: "22px"
+              top: `${Math.random() * 100}%`,
+              fontSize: "24px",
+              opacity: 0.85
             }}
           >
             {["🎈", "✨", "💫"][i % 3]}
@@ -171,7 +148,7 @@ export default function App() {
           position: "absolute",
           bottom: "0",
           left: Math.random() * 90 + "vw",
-          fontSize: "24px",
+          fontSize: "26px",
           animation: "float 3s linear"
         }}>💗</div>
       ))}
@@ -181,37 +158,35 @@ export default function App() {
         <source src="/anyayo.mp3" type="audio/mpeg" />
       </audio>
 
-      {/* CINEMATIC REVEAL */}
+      {/* FALLING OBJECTS ON LAST TAP */}
       {revealFX && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "white",
-            zIndex: 3
-          }}
-        >
-          {Array.from({ length: 30 }).map((_, i) => (
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 3,
+          pointerEvents: "none"
+        }}>
+          {Array.from({ length: 40 }).map((_, i) => (
             <motion.div
               key={i}
               initial={{ y: "-10%" }}
               animate={{ y: "110%" }}
               transition={{
-                duration: 2 + Math.random(),
-                delay: Math.random()
+                duration: 3,
+                delay: Math.random() * 0.5,
+                ease: "linear"
               }}
               style={{
                 position: "absolute",
                 left: `${Math.random() * 100}%`,
-                fontSize: "26px"
+                fontSize: "28px",
+                opacity: 0.95
               }}
             >
               {["🎀", "🍫", "💖"][i % 3]}
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       )}
 
       {/* MAIN CARD */}
@@ -236,7 +211,7 @@ export default function App() {
           {messages[step]}
         </motion.h2>
 
-        {step < messages.length - 1 || !showImage ? (
+        {step < messages.length - 1 ? (
           <motion.button
             onClick={handleNext}
             animate={{ rotate: [0, -5, 5, 0] }}
