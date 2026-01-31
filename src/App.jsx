@@ -119,7 +119,7 @@ setTimeout(() => {
         backgroundImage: "url('/ditiyaa.jpg')",
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
-        backgroundSize: "contain",
+        backgroundSize: "cover",
         filter: "blur(30px)",
         transform: "scale(1.2)",
         opacity: 0.25
