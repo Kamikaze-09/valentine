@@ -1,21 +1,22 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 
 export default function App() {
   const [step, setStep] = useState(0);
   const [hearts, setHearts] = useState([]);
   const [easter, setEaster] = useState(false);
-  const [revealFX, setRevealFX] = useState(false);
-  const [bassHit, setBassHit] = useState(false);
+  const [bassDrop, setBassDrop] = useState(false);
 
   const clickCount = useRef(0);
   const audioRef = useRef(null);
   const volumeInterval = useRef(null);
 
-  // Audio analysis refs
+  // Audio analysis
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
   const audioCtxRef = useRef(null);
+  const lastBassRef = useRef(0);
+  const lastVibrateRef = useRef(0);
 
   const messages = [
     "Ditiyaa… hiii... uk? 💖",
@@ -27,7 +28,6 @@ export default function App() {
   ];
 
   const floatingItems = Array.from({ length: 14 });
-  const fallItems = Array.from({ length: 24 });
 
   const spawnHeart = () => {
     const id = Date.now();
@@ -37,7 +37,7 @@ export default function App() {
     }, 3000);
   };
 
-  // 🎧 Music + bass detection
+  // 🎧 Music + controlled bass-drop detection
   const startMusic = () => {
     const audio = audioRef.current;
     audio.currentTime = 0;
@@ -70,33 +70,39 @@ export default function App() {
       dataArrayRef.current = dataArray;
       audioCtxRef.current = audioCtx;
 
-      const detectBass = () => {
+      const detectBassDrop = () => {
         analyser.getByteFrequencyData(dataArray);
 
-        // LOW frequencies only (bass)
-        const bassEnergy =
-          dataArray.slice(0, 15).reduce((a, b) => a + b, 0) / 15;
+        // Low-frequency energy (bass only)
+        const bass =
+          dataArray.slice(0, 12).reduce((a, b) => a + b, 0) / 12;
 
-        if (bassEnergy > 120) {
-          setBassHit(true);
-          setTimeout(() => setBassHit(false), 120);
+        const lastBass = lastBassRef.current;
+        const bassJump = bass - lastBass;
+        const now = Date.now();
+
+        // 🔥 TRUE bass drop + 5s cooldown
+        if (
+          bassJump > 35 &&
+          bass > 120 &&
+          now - lastVibrateRef.current > 5000
+        ) {
+          setBassDrop(true);
+          lastVibrateRef.current = now;
+
+          setTimeout(() => setBassDrop(false), 120);
         }
 
-        requestAnimationFrame(detectBass);
+        lastBassRef.current = bass;
+        requestAnimationFrame(detectBassDrop);
       };
 
-      detectBass();
+      detectBassDrop();
     }
   };
 
   const handleNext = () => {
     spawnHeart();
-
-    if (step === messages.length - 2) {
-      setRevealFX(true);
-      setTimeout(() => setRevealFX(false), 6000);
-    }
-
     if (step === 0) startMusic();
     setStep(step + 1);
   };
@@ -111,7 +117,7 @@ export default function App() {
   return (
     <motion.div
       animate={
-        bassHit
+        bassDrop
           ? { x: [-2, 2, -2], y: [-1, 1, -1] }
           : { x: 0, y: 0 }
       }
@@ -154,8 +160,13 @@ export default function App() {
         opacity: 0.35
       }} />
 
-      {/* FLOATING OBJECTS */}
-      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none" }}>
+      {/* FLOATING BACKGROUND OBJECTS */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 1,
+        pointerEvents: "none"
+      }}>
         {floatingItems.map((_, i) => (
           <motion.div
             key={i}
@@ -163,7 +174,12 @@ export default function App() {
               x: ["0vw", `${Math.random() * 100}vw`],
               y: ["0vh", `${Math.random() * 100}vh`]
             }}
-            transition={{ duration: 5, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "linear"
+            }}
             style={{
               position: "absolute",
               left: `${Math.random() * 100}%`,
@@ -177,36 +193,26 @@ export default function App() {
         ))}
       </div>
 
+      {/* HEARTS */}
+      {hearts.map((id) => (
+        <div
+          key={id}
+          style={{
+            position: "absolute",
+            bottom: "0",
+            left: Math.random() * 90 + "vw",
+            fontSize: "26px",
+            animation: "float 3s linear"
+          }}
+        >
+          💗
+        </div>
+      ))}
+
       {/* MUSIC */}
       <audio ref={audioRef}>
         <source src="/anyayo.mp3" type="audio/mpeg" />
       </audio>
-
-      {/* FALLING OBJECTS — disappear ONLY after reaching bottom */}
-      {revealFX && (
-        <div style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
-          {fallItems.map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ y: "-15vh" }}
-              animate={{ y: "110vh" }}
-              transition={{
-                duration: 6,
-                delay: i * 0.15,
-                ease: "linear"
-              }}
-              style={{
-                position: "absolute",
-                left: `${(i % 8) * 12 + 4}%`,
-                fontSize: "28px",
-                opacity: 0.95
-              }}
-            >
-              {["🎀", "🍫", "💖"][i % 3]}
-            </motion.div>
-          ))}
-        </div>
-      )}
 
       {/* MAIN CARD */}
       <div style={{
@@ -219,6 +225,7 @@ export default function App() {
         zIndex: 2,
         boxShadow: "0 0 40px rgba(236,72,153,0.35)"
       }}>
+
         <motion.h2
           key={step}
           initial={{ opacity: 0, y: 20 }}
