@@ -83,8 +83,9 @@ export default function App() {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",
+   <div style={{
+      width: "100vw",
+      height: "100vh",
       background: "linear-gradient(270deg, #f472b6, #f9a8d4, #fecdd3)",
       backgroundSize: "600% 600%",
       animation: "gradient 10s ease infinite",
@@ -94,6 +95,7 @@ export default function App() {
       position: "relative",
       overflow: "hidden"
     }}>
+
 
       {/* Gradient animation */}
       <style>{`
