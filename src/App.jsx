@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 
 export default function App() {
@@ -37,7 +37,7 @@ export default function App() {
     }, 3000);
   };
 
-  // 🎧 Music + controlled bass-drop detection
+  // 🎧 Music + bass-drop detection
   const startMusic = () => {
     const audio = audioRef.current;
     audio.currentTime = 0;
@@ -73,15 +73,12 @@ export default function App() {
       const detectBassDrop = () => {
         analyser.getByteFrequencyData(dataArray);
 
-        // Low-frequency energy (bass only)
         const bass =
           dataArray.slice(0, 12).reduce((a, b) => a + b, 0) / 12;
 
-        const lastBass = lastBassRef.current;
-        const bassJump = bass - lastBass;
+        const bassJump = bass - lastBassRef.current;
         const now = Date.now();
 
-        // 🔥 TRUE bass drop + 5s cooldown
         if (
           bassJump > 35 &&
           bass > 120 &&
@@ -89,7 +86,6 @@ export default function App() {
         ) {
           setBassDrop(true);
           lastVibrateRef.current = now;
-
           setTimeout(() => setBassDrop(false), 120);
         }
 
@@ -111,6 +107,31 @@ export default function App() {
     clickCount.current++;
     if (clickCount.current >= 2) setEaster(true);
   };
+
+  // 🎚️ FINAL MUSIC FADE-OUT (2s wait + 5s fade)
+  useEffect(() => {
+    if (step === messages.length - 1) {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      const delay = setTimeout(() => {
+        let vol = audio.volume;
+
+        const fadeOut = setInterval(() => {
+          if (vol > 0.01) {
+            vol -= 0.02;
+            audio.volume = vol;
+          } else {
+            audio.pause();
+            audio.volume = 0;
+            clearInterval(fadeOut);
+          }
+        }, 200);
+      }, 2000);
+
+      return () => clearTimeout(delay);
+    }
+  }, [step]);
 
   const isMobile = window.innerWidth < 768;
 
