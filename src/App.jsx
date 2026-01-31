@@ -127,7 +127,7 @@ export default function App() {
             clearInterval(fadeOut);
           }
         }, 200);
-      }, 2000);
+      }, 20000);
 
       return () => clearTimeout(delay);
     }
