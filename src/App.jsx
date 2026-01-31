@@ -21,6 +21,7 @@ export default function App() {
   ];
 
   const floatingItems = Array.from({ length: 14 });
+  const fallItems = Array.from({ length: 24 }); // less clustered
 
   const spawnHeart = () => {
     const id = Date.now();
@@ -51,7 +52,7 @@ export default function App() {
 
     if (step === messages.length - 2) {
       setRevealFX(true);
-      setTimeout(() => setRevealFX(false), 3000);
+      setTimeout(() => setRevealFX(false), 6000);
     }
 
     if (step === 0) startMusic();
@@ -124,7 +125,7 @@ export default function App() {
               y: ["0vh", `${Math.random() * 100}vh`]
             }}
             transition={{
-              duration: 6,
+              duration: 5,
               repeat: Infinity,
               repeatType: "reverse",
               ease: "linear"
@@ -158,7 +159,7 @@ export default function App() {
         <source src="/anyayo.mp3" type="audio/mpeg" />
       </audio>
 
-      {/* FALLING OBJECTS ON LAST TAP */}
+      {/* FALLING OBJECTS – LAST TAP */}
       {revealFX && (
         <div style={{
           position: "absolute",
@@ -166,19 +167,19 @@ export default function App() {
           zIndex: 3,
           pointerEvents: "none"
         }}>
-          {Array.from({ length: 40 }).map((_, i) => (
+          {fallItems.map((_, i) => (
             <motion.div
               key={i}
-              initial={{ y: "-10%" }}
-              animate={{ y: "110%" }}
+              initial={{ y: "-15vh" }}
+              animate={{ y: "110vh" }}
               transition={{
-                duration: 3,
-                delay: Math.random() * 0.5,
+                duration: 6,
+                delay: i * 0.15,   // spreads them out
                 ease: "linear"
               }}
               style={{
                 position: "absolute",
-                left: `${Math.random() * 100}%`,
+                left: `${(i % 8) * 12 + 4}%`, // even horizontal spacing
                 fontSize: "28px",
                 opacity: 0.95
               }}
