@@ -5,14 +5,18 @@ export default function App() {
   const [step, setStep] = useState(0);
   const [hearts, setHearts] = useState([]);
   const [easter, setEaster] = useState(false);
-  const clickCount = useRef(0);
+  const [revealFX, setRevealFX] = useState(false);
+  const [showImage, setShowImage] = useState(false);
 
+  const clickCount = useRef(0);
   const audioRef = useRef(null);
   const volumeInterval = useRef(null);
 
+  const floatingItems = Array.from({ length: 12 });
+
   const messages = [
-    "Hey Ditiyaa… tui the loveliest, cutest, mastikhor-est girl i have ever seeen 💖",
-    "Bee it any day, keep slayying ✨",
+    "Ditiyaa… hiii... uk? 💖",
+    "tui the loveliest, cutest, mastikhor-est girl i have ever seeen 💖✨",
     "tui deserve koris being treated as a princess 👑",
     "Just be happyyy and besttt wishesss andd neverrrr be saadd💕",
     "Not a proposal… just a small Valentine's wish 🌸",
@@ -31,6 +35,7 @@ export default function App() {
     const audio = audioRef.current;
     audio.currentTime = 0;
     audio.volume = 0.02;
+    audio.muted = false;
     audio.play();
 
     let vol = 0.02;
@@ -44,6 +49,15 @@ export default function App() {
 
   const handleNext = () => {
     spawnHeart();
+
+    if (step === messages.length - 2) {
+      setRevealFX(true);
+      setTimeout(() => {
+        setRevealFX(false);
+        setShowImage(true);
+      }, 3000);
+    }
+
     if (step === 0) startMusic();
     setStep(step + 1);
   };
@@ -79,13 +93,15 @@ export default function App() {
 
   const handlePhotoClick = () => {
     clickCount.current++;
-    if (clickCount.current >= 5) setEaster(true);
+    if (clickCount.current >= 2) setEaster(true);
   };
 
+  const isMobile = window.innerWidth < 768;
+
   return (
-   <div style={{
+    <div style={{
       width: "100vw",
-      height: "100vh",
+      minHeight: "100svh",
       background: "linear-gradient(270deg, #f472b6, #f9a8d4, #fecdd3)",
       backgroundSize: "600% 600%",
       animation: "gradient 10s ease infinite",
@@ -96,21 +112,23 @@ export default function App() {
       overflow: "hidden"
     }}>
 
-
-      {/* Gradient animation */}
       <style>{`
         @keyframes gradient {
           0% { background-position: 0% 50% }
           50% { background-position: 100% 50% }
           100% { background-position: 0% 50% }
         }
+        @keyframes float {
+          from { transform: translateY(0); opacity: 1; }
+          to { transform: translateY(-200px); opacity: 0; }
+        }
       `}</style>
 
-      {/* DESKTOP BLURRED BACKGROUND */}
+      {/* BLURRED BACKGROUND */}
       <div style={{
         position: "absolute",
         inset: 0,
-        backgroundImage: "url('/desktop.jpg')",
+        backgroundImage: isMobile ? "url('/mobile.jpg')" : "url('/desktop.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         filter: "blur(35px)",
@@ -118,38 +136,94 @@ export default function App() {
         opacity: 0.3
       }} />
 
-      {/* Hearts */}
+      {/* FLOATING BACKGROUND OBJECTS */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 1,
+        pointerEvents: "none"
+      }}>
+        {floatingItems.map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ y: "110%", opacity: 0 }}
+            animate={{ y: "-10%", opacity: 0.7 }}
+            transition={{
+              duration: 12 + Math.random() * 6,
+              repeat: Infinity,
+              delay: Math.random() * 5,
+              ease: "linear"
+            }}
+            style={{
+              position: "absolute",
+              left: `${Math.random() * 100}%`,
+              fontSize: "22px"
+            }}
+          >
+            {["🎈", "✨", "💫"][i % 3]}
+          </motion.div>
+        ))}
+      </div>
+
+      {/* HEARTS */}
       {hearts.map((id) => (
         <div key={id} style={{
           position: "absolute",
           bottom: "0",
-          left: Math.random() * 100 + "%",
+          left: Math.random() * 90 + "vw",
           fontSize: "24px",
-          animation: "float 3s linear",
+          animation: "float 3s linear"
         }}>💗</div>
       ))}
 
-      <style>{`
-        @keyframes float {
-          from { transform: translateY(0); opacity: 1; }
-          to { transform: translateY(-200px); opacity: 0; }
-        }
-      `}</style>
-
-      {/* Music */}
+      {/* MUSIC */}
       <audio ref={audioRef}>
         <source src="/anyayo.mp3" type="audio/mpeg" />
       </audio>
 
-      {/* MAIN CARD (UNCHANGED) */}
+      {/* CINEMATIC REVEAL */}
+      {revealFX && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "white",
+            zIndex: 3
+          }}
+        >
+          {Array.from({ length: 30 }).map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ y: "-10%" }}
+              animate={{ y: "110%" }}
+              transition={{
+                duration: 2 + Math.random(),
+                delay: Math.random()
+              }}
+              style={{
+                position: "absolute",
+                left: `${Math.random() * 100}%`,
+                fontSize: "26px"
+              }}
+            >
+              {["🎀", "🍫", "💖"][i % 3]}
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
+
+      {/* MAIN CARD */}
       <div style={{
         background: "white",
         padding: "30px",
         borderRadius: "20px",
-        width: "400px",
+        width: "90vw",
         maxWidth: "400px",
         textAlign: "center",
-        zIndex: 2
+        zIndex: 2,
+        boxShadow: "0 0 40px rgba(236,72,153,0.35)"
       }}>
 
         <motion.h2
@@ -162,7 +236,7 @@ export default function App() {
           {messages[step]}
         </motion.h2>
 
-        {step < messages.length - 1 ? (
+        {step < messages.length - 1 || !showImage ? (
           <motion.button
             onClick={handleNext}
             animate={{ rotate: [0, -5, 5, 0] }}
