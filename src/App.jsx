@@ -168,6 +168,7 @@ setTimeout(() => {
         {step < messages.length - 1 ? (
           <motion.button
             onClick={handleNext}
+            onTouchStart={handleNext}
             animate={{ rotate: [0, -5, 5, 0] }}
             transition={{ duration: 0.4 }}
             style={{
