@@ -11,7 +11,7 @@ export default function App() {
   const audioRef = useRef(null);
   const volumeInterval = useRef(null);
 
-  // Audio analysis
+  // 🎧 Audio analysis
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
   const audioCtxRef = useRef(null);
@@ -19,13 +19,25 @@ export default function App() {
   const lastVibrateRef = useRef(0);
 
   const messages = [
-    "Ditiyaa… hiii... uk? 💖",
-    "tui the loveliest, cutest, mastikhor-est girl i have ever seeen 💖✨",
-    "tui deserve koris being treated as a princess 👑",
-    "Just be happyyy and besttt wishesss andd neverrrr be saadd💕",
-    "Not a proposal… just a small Valentine's wish 🌸",
-    "Hope this made you smile a little 💗"
+    "hiii Puchiii...🎀💖",
+    "uk i never met somebody who is soo pretty, kind, pyaara, pagol like you💖✨",
+    "tui puroo swarg se ayi apsara cored. 😍👑",
+    "bee it anywheree, just slaayyy💕",
+    "and yeah, next year, who knows? 😝🌸",
+    "Neverr stop smilling 😋💗",
+    "I hope you love this giftt.."
   ];
+
+  // 🎀 GIF mapping
+  const gifs = {
+    0: "/gif-good.gif",
+    1: "/gif-shine.gif",
+    2: "/gif-bear.gif",
+    3: "/gif-heart.gif",
+    4: "/gif-proposal.gif",
+    5: "/gif-smile.gif",
+    end : "/gif-end-heart.gif"
+  };
 
   const floatingItems = Array.from({ length: 14 });
 
@@ -37,7 +49,7 @@ export default function App() {
     }, 3000);
   };
 
-  // 🎧 Music + bass-drop detection
+  // 🎧 Music + bass detection
   const startMusic = () => {
     const audio = audioRef.current;
     audio.currentTime = 0;
@@ -72,7 +84,6 @@ export default function App() {
 
       const detectBassDrop = () => {
         analyser.getByteFrequencyData(dataArray);
-
         const bass =
           dataArray.slice(0, 12).reduce((a, b) => a + b, 0) / 12;
 
@@ -108,7 +119,7 @@ export default function App() {
     if (clickCount.current >= 2) setEaster(true);
   };
 
-  // 🎚️ FINAL MUSIC FADE-OUT (2s wait + 5s fade)
+  // 🎚️ Final music fade-out
   useEffect(() => {
     if (step === messages.length - 1) {
       const audio = audioRef.current;
@@ -116,7 +127,6 @@ export default function App() {
 
       const delay = setTimeout(() => {
         let vol = audio.volume;
-
         const fadeOut = setInterval(() => {
           if (vol > 0.01) {
             vol -= 0.02;
@@ -156,7 +166,6 @@ export default function App() {
         overflow: "hidden"
       }}
     >
-
       <style>{`
         @keyframes gradient {
           0% { background-position: 0% 50% }
@@ -167,9 +176,24 @@ export default function App() {
           from { transform: translateY(0); opacity: 1; }
           to { transform: translateY(-200px); opacity: 0; }
         }
+        .corner-gif {
+          position: absolute;
+          top: 0px;
+          right: 0px;
+          transform: translate(20%, -60%);
+          width: 72px;
+          opacity: 0;
+          animation: fadeInGif 0.6s ease forwards;
+          pointer-events: none;
+          z-index: 5;
+        }
+        @keyframes fadeInGif {
+          from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
 
-      {/* BLURRED BACKGROUND */}
+      {/* BLUR BACKGROUND */}
       <div style={{
         position: "absolute",
         inset: 0,
@@ -181,40 +205,32 @@ export default function App() {
         opacity: 0.35
       }} />
 
-      {/* FLOATING BACKGROUND OBJECTS */}
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 1,
-        pointerEvents: "none"
-      }}>
-        {floatingItems.map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{
-              x: ["0vw", `${Math.random() * 100}vw`],
-              y: ["0vh", `${Math.random() * 100}vh`]
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "linear"
-            }}
-            style={{
-              position: "absolute",
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              fontSize: "24px",
-              opacity: 0.85
-            }}
-          >
-            {["🎈", "✨", "💫"][i % 3]}
-          </motion.div>
-        ))}
-      </div>
+      {/* FLOATING */}
+      {floatingItems.map((_, i) => (
+        <motion.div
+          key={i}
+          animate={{
+            x: ["0vw", `${Math.random() * 100}vw`],
+            y: ["0vh", `${Math.random() * 100}vh`]
+          }}
+          transition={{
+            duration: 5,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+          style={{
+            position: "absolute",
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            fontSize: "24px",
+            opacity: 0.85
+          }}
+        >
+          {["🎈", "✨", "💫"][i % 3]}
+        </motion.div>
+      ))}
 
-      {/* HEARTS */}
+      {/* HEART FLOAT */}
       {hearts.map((id) => (
         <div
           key={id}
@@ -230,12 +246,12 @@ export default function App() {
         </div>
       ))}
 
-      {/* MUSIC */}
+      {/* AUDIO */}
       <audio ref={audioRef}>
         <source src="/anyayo.mp3" type="audio/mpeg" />
       </audio>
 
-      {/* MAIN CARD */}
+      {/* CARD */}
       <div style={{
         background: "white",
         padding: "30px",
@@ -244,8 +260,12 @@ export default function App() {
         maxWidth: "400px",
         textAlign: "center",
         zIndex: 2,
-        boxShadow: "0 0 40px rgba(236,72,153,0.35)"
+        boxShadow: "0 0 40px rgba(236,72,153,0.35)",
+        position: "relative"
       }}>
+        {step < messages.length - 1 && gifs[step] && (
+          <img src={gifs[step]} className="corner-gif" />
+        )}
 
         <motion.h2
           key={step}
@@ -260,8 +280,7 @@ export default function App() {
         {step < messages.length - 1 ? (
           <motion.button
             onClick={handleNext}
-            animate={{ rotate: [0, -5, 5, 0] }}
-            transition={{ duration: 0.4 }}
+            whileTap={{ scale: 0.92 }}
             style={{
               marginTop: "20px",
               padding: "10px 20px",
@@ -277,21 +296,39 @@ export default function App() {
           </motion.button>
         ) : (
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+            <img src={gifs.end} style={{ width: "70px", marginBottom: "10px" }} />
+
             <img
               src="/desktop.jpg"
               onClick={handlePhotoClick}
               style={{
                 width: "100%",
                 borderRadius: "15px",
-                marginTop: "20px",
                 cursor: "pointer"
               }}
             />
+
             {easter && (
               <p style={{ marginTop: "10px", color: "#db2777" }}>
                 For you, I will. Always.💌
               </p>
             )}
+
+            <motion.button
+              onClick={() => setStep(0)}
+              whileTap={{ scale: 0.92 }}
+              style={{
+                marginTop: "18px",
+                padding: "10px 22px",
+                background: "transparent",
+                color: "#db2777",
+                border: "2px solid #f9a8d4",
+                borderRadius: "999px",
+                cursor: "pointer"
+              }}
+            >
+              Replay 💗
+            </motion.button>
           </motion.div>
         )}
       </div>
